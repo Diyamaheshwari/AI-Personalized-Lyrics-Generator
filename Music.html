@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyricAI - Personalized Song Generator</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #fd79a8;
+            --text-color: #2d3436;
+            --light-text: #f5f6fa;
+            --bg-gradient: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            color: var(--text-color);
+            background: #f5f6fa;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 15s infinite ease-in;
+        }
+
+        .bubble:nth-child(1) {
+            width: 40px;
+            height: 40px;
+            left: 10%;
+            animation-duration: 8s;
+        }
+
+        .bubble:nth-child(2) {
+            width: 20px;
+            height: 20px;
+            left: 20%;
+            animation-duration: 5s;
+            animation-delay: 1s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 50px;
+            height: 50px;
+            left: 35%;
+            animation-duration: 7s;
+            animation-delay: 2s;
+        }
+
+        .bubble:nth-child(4) {
+            width: 80px;
+            height: 80px;
+            left: 50%;
+            animation-duration: 11s;
+            animation-delay: 0s;
+        }
+
+        .bubble:nth-child(5) {
+            width: 35px;
+            height: 35px;
+            left: 55%;
+            animation-duration: 6s;
+            animation-delay: 1s;
+        }
+
+        .bubble:nth-child(6) {
+            width: 45px;
+            height: 45px;
+            left: 65%;
+            animation-duration: 8s;
+            animation-delay: 3s;
+        }
+
+        .bubble:nth-child(7) {
+            width: 25px;
+            height: 25px;
+            left: 75%;
+            animation-duration: 7s;
+            animation-delay: 2s;
+        }
+
+        .bubble:nth-child(8) {
+            width: 80px;
+            height: 80px;
+            left: 80%;
+            animation-duration: 6s;
+            animation-delay: 1s;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(100px);
+            }
+            100% {
+                bottom: 1080px;
+                transform: translateX(-200px);
+            }
+        }
+
+        /* Header Styles */
+        header {
+            background: var(--bg-gradient);
+            color: var(--light-text);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+
+        nav ul li a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-color);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Main Content Styles */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--bg-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        /* Generator Form Styles */
+        .generator-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: var(--bg-gradient);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Results Section */
+        .results-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-header h2 {
+            color: var(--primary-color);
+        }
+
+        .copy-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-color);
+        }
+
+        .lyrics-content {
+            white-space: pre-line;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        /* Loading Animation */
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer Styles */
+        footer {
+            background: var(--bg-gradient);
+            color: var(--light-text);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .social-links a {
+            color: var(--light-text);
+            font-size: 1.5rem;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                flex-direction: column;
+            }
+
+            nav ul li {
+                margin: 0.5rem 0;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            nav {
+                display: none;
+            }
+
+            nav.active {
+                display: block;
+                width: 100%;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .generator-container, .results-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i>🎵</i>
+                <span>LyricAI</span>
+            </div>
+            <button class="mobile-menu-btn">☰</button>
+            <nav>
+                <!-- <ul>
+                    <li><a href="#generator">Generator</a></li>
+                    <li><a href="#features">Features</a></li>
+                     <li><a href="d8">About</a></li>
+                </ul> -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>AI-Powered Personalized Song Lyrics</h1>
+            <p>Create unique, custom song lyrics tailored to your emotions, stories, and style in seconds. Perfect for birthdays, weddings, or just expressing yourself.</p>
+        </section>
+
+        <!-- Generator Section -->
+        <section id="generator" class="generator-container">
+            <h2>Create Your Custom Lyrics</h2>
+            <form id="lyrics-form">
+                <div class="form-group">
+                    <label for="theme">Song Theme/Subject</label>
+                    <input type="text" id="theme" class="form-control" placeholder="e.g. Summer love, heartbreak, friendship" required>
+                </div>
+                <div class="form-group">
+                    <label for="mood">Mood/Emotion</label>
+                    <select id="mood" class="form-control" required>
+                        <option value="">Select a mood</option>
+                        <option value="happy">Happy/Upbeat</option>
+                        <option value="romantic">Romantic</option>
+                        <option value="sad">Sad/Melancholic</option>
+                        <option value="angry">Angry/Aggressive</option>
+                        <option value="chill">Chill/Relaxed</option>
+                        <option value="inspirational">Inspirational</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="style">Musical Style</label>
+                    <select id="style" class="form-control" required>
+                        <option value="">Select a style</option>
+                        <option value="pop">Pop</option>
+                        <option value="rock">Rock</option>
+                        <option value="hiphop">Hip Hop/Rap</option>
+                        <option value="rnb">R&B</option>
+                        <option value="country">Country</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="jazz">Jazz</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="details">Additional Details (optional)</label>
+                    <textarea id="details" class="form-control" placeholder="Any specific words, phrases, or details you'd like included?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-block">Generate Lyrics</button>
+            </form>
+
+            <div class="loader">
+                <div class="loader-spinner"></div>
+                <p>Our AI is composing your personalized lyrics...</p>
+            </div>
+
+            <div class="results-container" id="results">
+                <div class="results-header">
+                    <h2>Your Custom Lyrics</h2>
+                    <button class="copy-btn" id="copy-btn">Copy Lyrics</button>
+                </div>
+                <div class="lyrics-content" id="lyrics-content"></div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🎤</div>
+                <h3>Personalized Content</h3>
+                <p>Our AI creates lyrics that reflect your unique story, emotions, and style preferences.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Generate complete song lyrics in seconds, saving you hours of writer's block.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎼</div>
+                <h3>Multiple Genres</h3>
+                <p>From pop to hip hop, country to rock - we've got all musical styles covered.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer id="about">
+        <div class="footer-content">
+            <h3>LyricAI - AI Song Lyrics Generator</h3>
+            <p>Create, inspire, and express yourself through personalized music.</p>
+            <div class="social-links">
+                <a href="#">📱</a>
+                <a href="#">🐦</a>
+                <a href="#">📘</a>
+                <a href="#">📸</a>
+            </div>
+            <p>&copy; 2023 LyricAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const nav = document.querySelector('nav');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+
+        // Form Submission
+        const lyricsForm = document.getElementById('lyrics-form');
+        const loader = document.querySelector('.loader');
+        const resultsContainer = document.getElementById('results');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const copyBtn = document.getElementById('copy-btn');
+
+        lyricsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading animation
+            loader.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            
+            // Get form values
+            const theme = document.getElementById('theme').value;
+            const mood = document.getElementById('mood').value;
+            const style = document.getElementById('style').value;
+            const details = document.getElementById('details').value;
+            
+            // Simulate API call with timeout (in a real app, you would call your backend API here)
+            setTimeout(() => {
+                // Hide loader
+                loader.style.display = 'none';
+                
+                // Generate mock lyrics based on inputs
+                const lyrics = generateMockLyrics(theme, mood, style, details);
+                
+                // Display results
+                lyricsContent.textContent = lyrics;
+                resultsContainer.style.display = 'block';
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        });
+
+        // Copy Lyrics Button
+        copyBtn.addEventListener('click', () => {
+            const lyrics = lyricsContent.textContent;
+            navigator.clipboard.writeText(lyrics).then(() => {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy Lyrics';
+                }, 2000);
+            });
+        });
+
+        // Function to generate mock lyrics (in a real app, this would be done by your backend AI)
+        function generateMockLyrics(theme, mood, style, details) {
+            const styles = {
+                pop: {
+                    structure: ["Verse", "Pre-Chorus", "Chorus", "Verse", "Pre-Chorus", "Chorus", "Bridge", "Chorus"],
+                    characteristics: "catchy melodies and repetitive hooks"
+                },
+                rock: {
+                    structure: ["Verse", "Chorus", "Verse", "Chorus", "Solo", "Bridge", "Chorus"],
+                    characteristics: "powerful vocals and guitar-driven sound"
+                },
+                hiphop: {
+                    structure: ["Intro", "Verse", "Hook", "Verse", "Hook", "Verse", "Outro"],
+                    characteristics: "rhyming verses and strong beats"
+                },
+                rnb: {
+                    structure: ["Intro", "Verse", "Pre-Chorus", "Chorus", "Verse", "Pre-Chorus", "Chorus", "Bridge", "Chorus"],
+                    characteristics: "smooth vocals and soulful melodies"
+                },
+                country: {
+                    structure: ["Verse", "Chorus", "Verse", "Chorus", "Bridge", "Chorus"],
+                    characteristics: "storytelling lyrics and acoustic instruments"
+                },
+                electronic: {
+                    structure: ["Intro", "Build", "Drop", "Verse", "Build", "Drop", "Breakdown", "Outro"],
+                    characteristics: "repetitive phrases and electronic sounds"
+                },
+                jazz: {
+                    structure: ["Intro", "Head", "Solo", "Head", "Solo", "Head", "Outro"],
+                    characteristics: "improvisational elements and complex chords"
+                }
+            };
+            
+            const moods = {
+                happy: ["joyful", "upbeat", "celebratory", "positive", "exciting"],
+                romantic: ["passionate", "loving", "intimate", "devoted", "yearning"],
+                sad: ["melancholic", "heartbroken", "lonely", "reflective", "nostalgic"],
+                angry: ["intense", "aggressive", "frustrated", "rebellious", "defiant"],
+                chill: ["relaxed", "mellow", "peaceful", "easygoing", "laid-back"],
+                inspirational: ["motivational", "hopeful", "empowering", "uplifting", "encouraging"]
+            };
+            
+            const selectedStyle = styles[style] || styles.pop;
+            const selectedMood = moods[mood] || moods.happy;
+            
+            let lyrics = `=== ${theme.toUpperCase()} ===\n\n`;
+            lyrics += `Style: ${style} | Mood: ${mood}\n\n`;
+            
+            if (details) {
+                lyrics += `Including: ${details}\n\n`;
+            }
+            
+            selectedStyle.structure.forEach((section, index) => {
+                lyrics += `[${section} ${index > 0 ? index/2 + 1 : 1}]\n`;
+                
+                const lines = Math.floor(Math.random() * 4) + 2; // 2-5 lines per section
+                for (let i = 0; i < lines; i++) {
+                    lyrics += generateLine(theme, selectedMood, style) + "\n";
+                }
+                
+                lyrics += "\n";
+            });
+            
+            return lyrics;
+        }
+        
+        function generateLine(theme, moodDescriptors, style) {
+            const starters = {
+                pop: ["I can't stop", "You got me like", "We're flying high", "Tonight we'll"],
+                rock: ["I won't back down", "You can't break me", "The fire burns", "We stand tall"],
+                hiphop: ["Straight out the", "I keep it real", "Money talk but", "They don't know"],
+                rnb: ["Late night thinking", "Your love is", "I can feel it", "Whisper to me"],
+                country: ["Down that old dirt road", "My heart's been", "The whiskey's smooth", "She left me with"],
+                electronic: ["The beat drops", "Lose yourself in", "Hands up high", "The night is"],
+                jazz: ["Like a smooth melody", "The notes they", "In the moonlight", "Your smile is"]
+            };
+            
+            const rhymes = [
+                ["heart", "start", "part", "art"],
+                ["fire", "desire", "higher", "liar"],
+                ["night", "light", "bright", "right"],
+                ["rain", "pain", "again", "explain"],
+                ["you", "true", "blue", "through"]
+            ];
+            
+            const selectedRhyme = rhymes[Math.floor(Math.random() * rhymes.length)];
+            const rhymeWord = selectedRhyme[Math.floor(Math.random() * selectedRhyme.length)];
+            
+            const styleStarters = starters[style] || starters.pop;
+            const starter = styleStarters[Math.floor(Math.random() * styleStarters.length)];
+            
+            const moodDescriptor = moodDescriptors[Math.floor(Math.random() * moodDescriptors.length)];
+            
+            return `${starter} ${moodDescriptor} ${rhymeWord}`;
+        }
+
+        // Create animated bubbles
+        const background = document.querySelector('.background');
+        
+        function createBubbles() {
+            // We already have 8 bubbles in the HTML, but we can add more dynamically if needed
+            for (let i = 0; i < 5; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // Random size between 10px and 60px
+                const size = Math.random() * 50 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // Random position
+                bubble.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation duration between 5s and 15s
+                const duration = Math.random() * 10 + 5;
+                bubble.style.animationDuration = `${duration}s`;
+                
+                // Random delay
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                
+                background.appendChild(bubble);
+            }
+        }
+        
+        // Initialize
+        createBubbles();
+    </script>
+</body>
+</html>
